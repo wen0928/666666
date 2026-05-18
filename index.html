@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>互動式十二時辰教學</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+      background: #f5f8fb;
+      color: #1f2937;
+      --tag-zodiac: #7c3aed;
+      --tag-organ: #16a34a;
+      --tag-timeword: #f97316;
+      --tag-current: #0ea5e9;
+      --card-bg: #ffffff;
+      --panel-border: rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 40px;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+    }
+
+    header {
+      text-align: center;
+      max-width: 900px;
+      width: 100%;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 2.5vw, 3rem);
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      margin: 14px auto 0;
+      max-width: 780px;
+      line-height: 1.8;
+      color: #475569;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 1.1fr) minmax(340px, 0.9fr);
+      gap: 24px;
+      width: min(1200px, 100%);
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+    }
+
+    .clock-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .clock-card svg {
+      width: min(100%, 450px);
+      max-width: 420px;
+      height: auto;
+    }
+
+    .clock-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: #475569;
+    }
+
+    .clock-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f1f5f9;
+    }
+
+    .clock-legend .current { background: rgba(14, 165, 233, 0.12); color: #0c4a6e; }
+
+    .detail-card {
+      display: grid;
+      gap: 18px;
+    }
+
+    .detail-card header {
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-card h2,
+    .detail-card h3 {
+      margin: 0;
+    }
+
+    .detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 999px;
+    }
+
+    .tag.zodiac { background: var(--tag-zodiac); }
+    .tag.organ { background: var(--tag-organ); }
+    .tag.timeword { background: var(--tag-timeword); }
+    .tag.current { background: var(--tag-current); }
+
+    .info-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .info-grid .info-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+
+    .info-grid .info-label {
+      min-width: 90px;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .info-grid .info-value {
+      color: #0f172a;
+      line-height: 1.7;
+      max-width: 100%;
+    }
+
+    .quote-block {
+      border-left: 4px solid #7c3aed;
+      padding-left: 18px;
+      margin: 0;
+      color: #334155;
+      font-style: italic;
+      line-height: 1.8;
+      background: #f8f2ff;
+      border-radius: 16px;
+      padding: 18px 20px;
+    }
+
+    .quote-note {
+      margin: 8px 0 0;
+      font-size: 0.92rem;
+      color: #475569;
+    }
+
+    .tips {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      background: #f8fafc;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    .tips strong { color: #0f172a; }
+
+    .footer {
+      text-align: center;
+      margin-top: 26px;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>互動式十二時辰教學</h1>
+    <p>以現代簡潔風呈現十二時辰圓盤，透過即時定位與點擊互動，了解每個時辰的生肖、臟腑、古代時間詞與文化養生意義。</p>
+  </header>
+
+  <section class="layout">
+    <article class="panel clock-card">
+      <div>
+        <h2 style="margin-bottom: 10px;">時辰圓盤</h2>
+        <p style="margin: 0; color: #475569;">點擊任一扇形，展開對應時辰詳細介紹。</p>
+      </div>
+      <svg viewBox="0 0 520 520" aria-label="十二時辰圓盤" role="img"></svg>
+      <div class="clock-legend">
+        <span class="current">目前時辰</span>
+      </div>
+    </article>
+
+    <article class="panel detail-card">
+      <header>
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <h2 id="detail-title">子時 · 23:00–01:00</h2>
+          <span class="tag current" id="detail-current-tag">目前時辰</span>
+        </div>
+        <div class="detail-tags" id="detail-tags"></div>
+      </header>
+
+      <div class="info-grid">
+        <div class="info-row"><span class="info-label">地支</span><span class="info-value" id="detail-branch">子</span></div>
+        <div class="info-row"><span class="info-label">對應時間</span><span class="info-value" id="detail-modern">23:00–01:00</span></div>
+        <div class="info-row"><span class="info-label">生肖</span><span class="info-value" id="detail-zodiac">鼠</span></div>
+        <div class="info-row"><span class="info-label">臟腑經絡</span><span class="info-value" id="detail-organ">腎經</span></div>
+        <div class="info-row"><span class="info-label">古代時詞</span><span class="info-value" id="detail-word">子夜、夜半</span></div>
+      </div>
+
+      <div class="info-grid">
+        <div>
+          <h3 style="margin:0 0 8px;">文化與中醫說明</h3>
+          <p id="detail-culture" class="info-value"></p>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;">養生建議</h3>
+          <p id="detail-health" class="info-value"></p>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin:0 0 8px;">對應詩句</h3>
+        <blockquote class="quote-block" id="detail-quote"></blockquote>
+        <p class="quote-note" id="detail-source"></p>
+      </div>
+    </article>
+  </section>
+
+  <div class="footer">此頁面為教學用範例，結合十二時辰與現代養生文化。</div>
+
+  <script>
+    const sections = [
+      {
+        id: '子', label: '子時', range: '23:00–01:00', zodiac: '鼠', organ: '腎經', word: '子夜、夜半', culture: '子時為一天之始，象徵陰陽轉換。中醫認為腎經當令，腎主藏精，在此時宜寧神養腎。', health: '深夜避免熬夜，宜早睡少動，喝一杯溫水或清淡藥膳可安神補腎。', quote: '夜深忽夢少年事，夢得還成一笑中。', source: '《寄令狐郎中》・李白・唐', color: '#7c3aed'
+      },
+      {
+        id: '丑', label: '丑時', range: '01:00–03:00', zodiac: '牛', organ: '膀胱經', word: '寒夜、凌晨', culture: '丑時屬牛，地支為陰土。此時自然界陰氣深重，膀胱經開始活動，適合養陰潛陽。', health: '睡眠正濃，不宜驚醒，保持體內陰陽平和，隔天可以熱敷腰背。', quote: '春眠不覺曉，處處聞啼鳥。', source: '《春曉》・孟浩然・唐', color: '#9333ea'
+      },
+      {
+        id: '寅', label: '寅時', range: '03:00–05:00', zodiac: '虎', organ: '膽經', word: '黎明前、黎明', culture: '寅時為陽氣初升，膽經當令，人心開始活躍。古人稱此時為「黎明」或「旦」。', health: '宜早起伸展，天尚寒冷，可配合少量溫熱飲品，促進膽經疏通。', quote: '梅須遜雪三分白，雪卻輸梅一段香。', source: '《詠梅》・王安石・宋', color: '#f97316'
+      },
+      {
+        id: '卯', label: '卯時', range: '05:00–07:00', zodiac: '兔', organ: '肝經', word: '平旦、晨曦', culture: '卯時是天明時刻，肝氣生發。古稱「平旦」，此時陽氣上升，適合養肝疏肝。', health: '早晨可慢跑、散步或做太極，以疏通肝氣、舒展筋骨。', quote: '朝辭白帝彩雲間，千里江陵一日還。', source: '《早發白帝城》・李白・唐', color: '#22c55e'
+      },
+      {
+        id: '辰', label: '辰時', range: '07:00–09:00', zodiac: '龍', organ: '胃經', word: '旦晨、雞鳴', culture: '辰時為太陽漸升的時段，胃經當令，古人稱「旦晨」。此時適合進食早餐，養胃攝入。', health: '早餐要吃得規律且溫暖，避免生冷，適合補中益氣的粥品。', quote: '朝來庭上鳴芭蕉，心起緘愁緒。', source: '《折楊柳》・晉·陶淵明', color: '#eab308'
+      },
+      {
+        id: '巳', label: '巳時', range: '09:00–11:00', zodiac: '蛇', organ: '脾經', word: '上午、日中前', culture: '巳時陽氣已充，脾胃運化旺盛。此時宜養脾助運，古人視為「日中前」的重要時段。', health: '適宜輕鬆活動與進補少量水果，避免過度疲勞，促進消化與氣血充足。', quote: '綠陰春盡落花時，深院靜，鳴柝破曉。', source: '《春日》・朱敦儒・宋', color: '#f59e0b'
+      },
+      {
+        id: '午', label: '午時', range: '11:00–13:00', zodiac: '馬', organ: '心經', word: '日午、晌午', culture: '午時是一日陽氣最盛之刻，心經當令。古稱「晌午」，宜寧靜養心，順應自然節律。', health: '午餐後不宜立即劇烈運動，可短暫午休或散步，保持心情平和。', quote: '人生易老天難老，歲歲重陽。', source: '《九月九日憶山東兄弟》・王維・唐', color: '#ef4444'
+      },
+      {
+        id: '未', label: '未時', range: '13:00–15:00', zodiac: '羊', organ: '小腸經', word: '午後、日影', culture: '未時為午後時分，小腸經開始活躍。古詩中的午後時光，常伴隨閒適與休憩。', health: '午后適合補充水分、進行緩和活動，不要過度睡眠以免影響晚上休息。', quote: '日高人渴漫思茶，點滴寒泉石上流。', source: '《山居夏日》・高駢・唐', color: '#22c55e'
+      },
+      {
+        id: '申', label: '申時', range: '15:00–17:00', zodiac: '猴', organ: '膀胱經', word: '申午、暮前', culture: '申時在日影西斜前，膀胱經氣機調整。適合收心養腎，以備晚間修復。', health: '宜做伸展、緩步，避免午後旺盛活動後疲勞過度。', quote: '落霞與孤鶩齊飛，秋水共長天一色。', source: '《滕王閣序》・王勃・唐', color: '#0ea5e9'
+      },
+      {
+        id: '酉', label: '酉時', range: '17:00–19:00', zodiac: '雞', organ: '膽經', word: '黃昏、夕陽', culture: '酉時黃昏降臨，膽經得令。古稱「夕陽」，是收斂陽氣、修養心神的時間。', health: '傍晚可適量散步，避免深夜進食，讓消化系統逐步進入休息。', quote: '夕陽無限好，只是近黃昏。', source: '《登金陵鳳凰臺》・李白・唐', color: '#f97316'
+      },
+      {
+        id: '戌', label: '戌時', range: '19:00–21:00', zodiac: '狗', organ: '心包經', word: '夜暮、入夜', culture: '戌時為夜幕初降，心包經開始守護情緒。古人重視此時的安寧與家庭團聚。', health: '晚間以清淡飲食為主，放鬆心情，不宜過度用腦或熬夜。', quote: '人間四月芳菲盡，山寺桃花始盛開。', source: '《山寺桃花》・白居易・唐', color: '#7c3aed'
+      },
+      {
+        id: '亥', label: '亥時', range: '21:00–23:00', zodiac: '豬', organ: '三焦經', word: '夜深、子夜前', culture: '亥時接近深夜，三焦經協調全身氣機。古人以此為整理一天、準備休息的時段。', health: '早睡早起為佳，若有夜讀或工作，可搭配淡茶助眠，保持內外平衡。', quote: '月落烏啼霜滿天，江楓漁火對愁眠。', source: '《枫桥夜泊》・張繼・唐', color: '#2563eb'
+      }
+    ];
+
+    const svg = document.querySelector('svg');
+    const detailTitle = document.getElementById('detail-title');
+    const detailCurrentTag = document.getElementById('detail-current-tag');
+    const detailTags = document.getElementById('detail-tags');
+    const detailBranch = document.getElementById('detail-branch');
+    const detailModern = document.getElementById('detail-modern');
+    const detailZodiac = document.getElementById('detail-zodiac');
+    const detailOrgan = document.getElementById('detail-organ');
+    const detailWord = document.getElementById('detail-word');
+    const detailCulture = document.getElementById('detail-culture');
+    const detailHealth = document.getElementById('detail-health');
+    const detailQuote = document.getElementById('detail-quote');
+    const detailSource = document.getElementById('detail-source');
+
+    function getCurrentSectionIndex() {
+      const now = new Date();
+      const hour = now.getHours();
+      if (hour === 23 || hour < 1) return 0;
+      if (hour < 3) return 1;
+      if (hour < 5) return 2;
+      if (hour < 7) return 3;
+      if (hour < 9) return 4;
+      if (hour < 11) return 5;
+      if (hour < 13) return 6;
+      if (hour < 15) return 7;
+      if (hour < 17) return 8;
+      if (hour < 19) return 9;
+      if (hour < 21) return 10;
+      return 11;
+    }
+
+    function polarToCartesian(cx, cy, radius, angleDeg) {
+      const angleRad = (angleDeg - 90) * Math.PI / 180.0;
+      return {
+        x: cx + radius * Math.cos(angleRad),
+        y: cy + radius * Math.sin(angleRad)
+      };
+    }
+
+    function createSector(cx, cy, radius, startAngle, endAngle) {
+      const start = polarToCartesian(cx, cy, radius, endAngle);
+      const end = polarToCartesian(cx, cy, radius, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+      return [
+        'M', cx, cy,
+        'L', start.x, start.y,
+        'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+        'Z'
+      ].join(' ');
+    }
+
+    function renderClock() {
+      svg.innerHTML = '';
+      const cx = 260;
+      const cy = 260;
+      const radius = 220;
+      const currentIndex = getCurrentSectionIndex();
+      sections.forEach((section, index) => {
+        const startAngle = index * 30;
+        const endAngle = startAngle + 30;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', createSector(cx, cy, radius, startAngle, endAngle));
+        path.setAttribute('fill', section.color);
+        path.setAttribute('fill-opacity', index === currentIndex ? '1' : '0.18');
+        path.setAttribute('stroke', index === currentIndex ? '#0f172a' : '#334155');
+        path.setAttribute('stroke-width', index === currentIndex ? '4' : '1');
+        path.setAttribute('cursor', 'pointer');
+        path.dataset.index = index;
+        path.addEventListener('click', () => updateDetail(index));
+        svg.appendChild(path);
+
+        const textAngle = startAngle + 15;
+        const labelPos = polarToCartesian(cx, cy, radius * 0.72, textAngle);
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', labelPos.x);
+        text.setAttribute('y', labelPos.y);
+        text.setAttribute('fill', '#0f172a');
+        text.setAttribute('font-size', '18');
+        text.setAttribute('font-weight', '600');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.textContent = section.id;
+        svg.appendChild(text);
+
+        const subPos = polarToCartesian(cx, cy, radius * 0.9, textAngle);
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', subPos.x);
+        subText.setAttribute('y', subPos.y);
+        subText.setAttribute('fill', '#475569');
+        subText.setAttribute('font-size', '12');
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('dominant-baseline', 'middle');
+        subText.textContent = section.range;
+        svg.appendChild(subText);
+      });
+
+      const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      center.setAttribute('cx', cx);
+      center.setAttribute('cy', cy);
+      center.setAttribute('r', 64);
+      center.setAttribute('fill', '#ffffff');
+      center.setAttribute('stroke', '#cbd5e1');
+      center.setAttribute('stroke-width', '2');
+      svg.appendChild(center);
+
+      const centerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      centerText.setAttribute('x', cx);
+      centerText.setAttribute('y', cy - 10);
+      centerText.setAttribute('fill', '#0f172a');
+      centerText.setAttribute('font-size', '22');
+      centerText.setAttribute('font-weight', '700');
+      centerText.setAttribute('text-anchor', 'middle');
+      centerText.textContent = '十二時辰';
+      svg.appendChild(centerText);
+      const centerSub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      centerSub.setAttribute('x', cx);
+      centerSub.setAttribute('y', cy + 20);
+      centerSub.setAttribute('fill', '#475569');
+      centerSub.setAttribute('font-size', '14');
+      centerSub.setAttribute('text-anchor', 'middle');
+      centerSub.textContent = '點擊查看詳情';
+      svg.appendChild(centerSub);
+
+      updateDetail(currentIndex);
+    }
+
+    function updateDetail(index) {
+      const section = sections[index];
+      const currentIndex = getCurrentSectionIndex();
+      detailTitle.textContent = `${section.label} · ${section.range}`;
+      detailCurrentTag.textContent = index === currentIndex ? '目前時辰' : '點擊時辰';
+      detailCurrentTag.className = `tag ${index === currentIndex ? 'current' : 'timeword'}`;
+      detailTags.innerHTML = '';
+      const tags = [
+        { text: section.zodiac, cls: 'zodiac' },
+        { text: section.organ, cls: 'organ' },
+        { text: section.word, cls: 'timeword' }
+      ];
+      tags.forEach(item => {
+        const span = document.createElement('span');
+        span.className = `tag ${item.cls}`;
+        span.textContent = item.text;
+        detailTags.appendChild(span);
+      });
+      detailBranch.textContent = section.id;
+      detailModern.textContent = section.range;
+      detailZodiac.textContent = section.zodiac;
+      detailOrgan.textContent = section.organ;
+      detailWord.textContent = section.word;
+      detailCulture.textContent = section.culture;
+      detailHealth.textContent = section.health;
+      detailQuote.textContent = section.quote;
+      detailSource.textContent = section.source;
+
+      const paths = svg.querySelectorAll('path');
+      paths.forEach(path => {
+        const pathIndex = Number(path.dataset.index);
+        path.setAttribute('fill-opacity', pathIndex === currentIndex ? '1' : '0.18');
+        path.setAttribute('stroke-width', pathIndex === currentIndex ? '4' : '1');
+      });
+    }
+
+    renderClock();
+    setInterval(() => {
+      const previousIndex = Number(document.querySelector('svg path[stroke-width="4"]')?.dataset.index || -1);
+      const currentIndex = getCurrentSectionIndex();
+      if (currentIndex !== previousIndex) {
+        renderClock();
+      }
+    }, 30_000);
+  </script>
+</body>
+</html>
